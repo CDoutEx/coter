@@ -29,9 +29,14 @@
             align-items: center;
         }
 
+        /* Título Fixo no Canto Superior Direito */
         .secao-principal .titulo-principal {
-            position: absolute;
-            font-family: 'Stardos Stencil', sans-serif;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            /* Fonte Alterada para Playfair Display */
+            font-family: 'Playfair Display', serif; 
+            font-weight: 700;
             font-size: 3.3em;
             text-decoration: none;
             color: #fff;
@@ -42,9 +47,16 @@
             text-align: center;
             line-height: 1.3;
             max-width: 90%;
-            border-right: .15em solid orange;
-            animation: typing-cursor .75s step-end infinite;
-            transition: top 2s, left 2s;
+            border-right: none; 
+            transition: none;
+        }
+        
+        /* Ajuste do tamanho da fonte para telas menores */
+        @media (max-width: 768px) {
+            .secao-principal .titulo-principal {
+                font-size: 1.8em;
+                letter-spacing: 2px;
+            }
         }
 
         .orbita-container {
@@ -80,13 +92,7 @@
             color: #fff;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
             line-height: 1.2;
-            border-right: .15em solid orange;
-            animation: typing-cursor .75s step-end infinite;
-        }
-
-        @keyframes typing-cursor {
-            from, to { border-color: transparent }
-            50% { border-color: orange }
+            border-right: none; 
         }
 
         @keyframes orbita-animacao {
@@ -176,17 +182,6 @@
             font-family: Arial, sans-serif;
             font-size: 0.9em;
         }
-
-        @media (max-width: 768px) {
-            .secao-principal .titulo-principal {
-                font-size: 1.8em;
-                letter-spacing: 2px;
-            }
-
-            .frase-conteudo {
-                font-size: 2em;
-            }
-        }
     </style>
 </head>
 <body>
@@ -216,7 +211,7 @@
                 </a>
             </div>
             <div class="icone-orbita icone4">
-                <a href="link-do-icone4.html">
+                <a href="miss_paz_av.html">
                     <img src="logo4.png" alt="Logo 4">
                 </a>
             </div>
@@ -242,7 +237,6 @@
         ];
 
         let fraseIndex = 0;
-        let tituloPosition = { x: 0, y: 0, width: 0, height: 0 };
         let frasePosition = { x: 0, y: 0, width: 0, height: 0 };
 
         function typeWriter(elementId, text, delay = 100, callback) {
@@ -251,7 +245,7 @@
             element.textContent = '';
             
             element.style.animation = 'none';
-            element.style.borderRightColor = 'transparent';
+            element.style.borderRight = 'none';
 
             const interval = setInterval(() => {
                 if (i < text.length) {
@@ -259,9 +253,6 @@
                     i++;
                 } else {
                     clearInterval(interval);
-                    element.style.animation = 'typing-cursor .75s step-end infinite';
-                    element.style.borderRightColor = 'orange';
-
                     if (callback) {
                         callback();
                     }
@@ -273,7 +264,7 @@
             return rect1.x < rect2.x + rect2.width &&
                    rect1.x + rect1.width > rect2.x &&
                    rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.y > rect2.y;
+                   rect1.y + rect1.height > rect2.y;
         }
 
         function isOverlappingIcons(x, y, width, height) {
@@ -291,58 +282,51 @@
             const distance = Math.sqrt(Math.pow(centerX - closestX, 2) + Math.pow(centerY - closestY, 2));
             return distance < exclusionRadius;
         }
+        
+        function isOverlappingFixedTitle(x, y, width, height) {
+            const fixedTitle = document.getElementById('tituloDinamico');
+            const fixedTitleRect = fixedTitle.getBoundingClientRect();
+            
+            const rect1 = { x: x, y: y, width: width, height: height };
+            const rect2 = { x: fixedTitleRect.left, y: fixedTitleRect.top, width: fixedTitleRect.width, height: fixedTitleRect.height };
+
+            return checkOverlap(rect1, rect2);
+        }
 
         function positionElements() {
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const titulo = document.getElementById('tituloDinamico');
             const fraseContainer = document.getElementById('fraseDinamicaContainer');
             
-            // 1. Posiciona o Título
-            let tituloX, tituloY;
-            do {
-                tituloX = Math.random() * (screenWidth - titulo.offsetWidth);
-                tituloY = Math.random() * (screenHeight - titulo.offsetHeight);
-            } while (isOverlappingIcons(tituloX, tituloY, titulo.offsetWidth, titulo.offsetHeight));
-            
-            tituloPosition = { x: tituloX, y: tituloY, width: titulo.offsetWidth, height: titulo.offsetHeight };
-            titulo.style.left = `${tituloX}px`;
-            titulo.style.top = `${tituloY}px`;
-
-            // 2. Posiciona a Frase (evitando ícones E o título)
             let fraseX, fraseY;
             do {
                 fraseX = Math.random() * (screenWidth - fraseContainer.offsetWidth);
                 fraseY = Math.random() * (screenHeight - fraseContainer.offsetHeight);
                 
                 frasePosition = { x: fraseX, y: fraseY, width: fraseContainer.offsetWidth, height: fraseContainer.offsetHeight };
-            } while (isOverlappingIcons(fraseX, fraseY, fraseContainer.offsetWidth, fraseContainer.offsetHeight) || checkOverlap(frasePosition, tituloPosition));
+            } while (isOverlappingIcons(fraseX, fraseY, fraseContainer.offsetWidth, fraseContainer.offsetHeight) || isOverlappingFixedTitle(fraseX, fraseY, fraseContainer.offsetWidth, fraseContainer.offsetHeight));
 
             fraseContainer.style.left = `${fraseX}px`;
             fraseContainer.style.top = `${fraseY}px`;
         }
         
         function iniciarEfeitos() {
-            positionElements();
-            typeWriter('tituloDinamico', 'COTER EM NÚMEROS', 100, () => {
-                executarFrases();
-            });
+            document.getElementById('tituloDinamico').textContent = 'COTER em Números';
+            executarFrases();
         }
         
         function executarFrases() {
+            positionElements();
             const fraseAtual = frases[fraseIndex];
             fraseIndex = (fraseIndex + 1) % frases.length;
             typeWriter('fraseDinamica', fraseAtual, 70, () => {
                  setTimeout(() => {
-                    positionElements();
                     executarFrases();
                 }, 6000);
             });
         }
 
         window.onload = () => {
-            document.getElementById('tituloDinamico').textContent = '';
-            document.getElementById('fraseDinamica').textContent = '';
             iniciarEfeitos();
         };
 
