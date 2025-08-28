@@ -142,8 +142,8 @@
         
         @media (min-width: 769px) {
             .icone4 {
-                width: 250px;
-                height: 250px;
+                width: 200px;
+                height: 200px;
             }
         }
 
@@ -216,7 +216,7 @@
                 </a>
             </div>
             <div class="icone-orbita icone4">
-                <a href="miss_paz_av.html">
+                <a href="link-do-icone4.html">
                     <img src="logo4.png" alt="Logo 4">
                 </a>
             </div>
@@ -273,14 +273,13 @@
             return rect1.x < rect2.x + rect2.width &&
                    rect1.x + rect1.width > rect2.x &&
                    rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.height > rect2.y;
+                   rect1.y + rect1.y > rect2.y;
         }
 
         function isOverlappingIcons(x, y, width, height) {
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
             
-            // Pega a dimensão real do container dos ícones para calcular o raio
             const orbitaContainer = document.querySelector('.orbita-container');
             const exclusionRadius = orbitaContainer.offsetWidth / 2 + 50; 
             const centerX = screenWidth / 2;
@@ -324,31 +323,27 @@
         }
         
         function iniciarEfeitos() {
+            positionElements();
             typeWriter('tituloDinamico', 'COTER EM NÚMEROS', 100, () => {
-                setTimeout(() => {
-                    executarFrases();
-                    setInterval(() => {
-                        positionElements();
-                        executarFrases();
-                    }, 6000);
-                }, 500);
+                executarFrases();
             });
         }
-
+        
         function executarFrases() {
             const fraseAtual = frases[fraseIndex];
             fraseIndex = (fraseIndex + 1) % frases.length;
-            typeWriter('fraseDinamica', fraseAtual, 70);
+            typeWriter('fraseDinamica', fraseAtual, 70, () => {
+                 setTimeout(() => {
+                    positionElements();
+                    executarFrases();
+                }, 6000);
+            });
         }
 
         window.onload = () => {
-            document.getElementById('tituloDinamico').textContent = 'COTER EM NÚMEROS';
-            document.getElementById('fraseDinamica').textContent = frases[0];
-
-            setTimeout(() => {
-                positionElements();
-                iniciarEfeitos();
-            }, 100);
+            document.getElementById('tituloDinamico').textContent = '';
+            document.getElementById('fraseDinamica').textContent = '';
+            iniciarEfeitos();
         };
 
         window.addEventListener('resize', positionElements);
