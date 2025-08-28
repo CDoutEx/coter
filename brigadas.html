@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comando de Operações Táticas - Brasil</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Variáveis CSS para a paleta de cores militar */
+        :root {
+            --verde-militar-escuro: #4a5d4a;
+            --verde-militar-medio: #607d60;
+            --verde-militar-claro: #8a9e8a;
+            --marrom-terra: #5a4b4b;
+            --bege-claro: #f0f0e0;
+            --branco-quase-puro: #f9f9f9;
+            --preto-quase-puro: #1a1a1a;
+            --laranja-alerta: #e77c40;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--verde-militar-escuro);
+            color: var(--bege-claro);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--preto-quase-puro);
+            color: var(--laranja-alerta);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--verde-militar-medio);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            /* Nova regra: Permite que a navegação se mova para a próxima linha */
+            flex-wrap: wrap; 
+        }
+
+        header .logo {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 2.2em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        header nav {
+            /* Adicionado: Permite que os links se envolvam em múltiplas linhas */
+            flex-wrap: wrap; 
+            justify-content: flex-end; /* Alinha os botões à direita */
+            display: flex;
+            flex-grow: 1;
+        }
+
+        header nav a {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--bege-claro);
+            text-decoration: none;
+            margin: 5px 10px; /* Alterado para margem fixa e um pouco maior */
+            padding: 8px 15px;
+            border: 1px solid var(--verde-militar-claro);
+            border-radius: 5px;
+            background-color: var(--verde-militar-medio);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            /* Adicionado: Para quebrar a linha em telas pequenas */
+            white-space: nowrap; 
+        }
+        
+        header nav a.active,
+        header nav a:hover {
+            background-color: var(--laranja-alerta);
+            color: var(--preto-quase-puro);
+            border-color: var(--laranja-alerta);
+        }
+
+        .container {
+            flex-grow: 1;
+            width: 95%;
+            max-width: 1400px;
+            background-color: var(--bege-claro);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px auto;
+            border: 2px solid var(--verde-militar-medio);
+        }
+
+        h1 {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--preto-quase-puro);
+            font-size: 3em;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        #map {
+            width: 100%;
+            height: 80vh;
+            border: 4px solid var(--verde-militar-medio);
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background-color: var(--verde-militar-escuro);
+            color: var(--bege-claro);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--laranja-alerta);
+        }
+        .leaflet-popup-tip {
+            background-color: var(--verde-militar-escuro);
+            border: none;
+        }
+
+        .popup-content h3 {
+            font-family: 'Chakra Petch', sans-serif;
+            margin-top: 0;
+            font-size: 1.6em;
+            color: var(--laranja-alerta);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .popup-content p {
+            font-family: 'Roboto Mono', monospace;
+            margin: 8px 0;
+            font-size: 1.2em;
+            color: var(--bege-claro);
+            line-height: 1.4;
+        }
+        .popup-content strong {
+            color: var(--verde-militar-claro);
+        }
+
+        footer {
+            background-color: var(--preto-quase-puro);
+            color: var(--verde-militar-claro);
+            padding: 15px 30px;
+            text-align: center;
+            font-size: 0.95em;
+            border-top: 3px solid var(--verde-militar-medio);
+            margin-top: auto;
+        }
+        footer p {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Comando Estratégico</div>
+        <nav>
+            <a href="#" data-filter="all" class="active">Todas as Unidades</a>
+            <a href="#" data-filter="comando_de_area">Comandos Militares de Área</a>
+            <a href="#" data-filter="divisao_de_exercito">Divisões de Exército</a>
+            <a href="#" data-filter="brigada">Brigadas</a>
+            <a href="#" data-filter="grandes_comandos_estrategicos">Grandes Comandos Estratégicos</a>
+            <a href="#" data-filter="especializada">Unidades de Elite</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>Mapa de Disposições Táticas</h1>
+        <div id="map"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Comando de Operações Táticas. Todos os direitos reservados.</p>
+        <p>Desenvolvido para segurança e informação.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const map = L.map('map').setView([-15.78, -47.92], 4);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const marcadores = [
+            // Brigadas de Cavalaria
+            {
+                coords: [-29.1923, -54.8664],
+                nome: "1ª Brigada de Cavalaria Mecanizada (1ª Bda C Mec)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 2.500 militares",
+                    funcao: "Segurança de fronteiras, operações em terreno pampa e missões de reconhecimento.",
+                    armamentos: "Fuzis IMBEL IA2, metralhadoras FN MAG, lança-granadas",
+                    blindados: "VBTP-MSR Guarani (transporte), VBR EE-9 Cascavel (reconhecimento)",
+                    carros_combate: "Carros de Combate Leopard 1A5 BR"
+                }
+            },
+            {
+                coords: [-29.7576, -57.0863],
+                nome: "2ª Brigada de Cavalaria Mecanizada (2ª Bda C Mec)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 2.600 militares",
+                    funcao: "Operações de proteção de fronteira e defesa territorial no sul do Brasil.",
+                    armamentos: "Fuzis IMBEL IA2, metralhadoras, canhões 90mm",
+                    blindados: "VBTP-MSR Guarani, VBR EE-9 Cascavel",
+                    carros_combate: "Carros de Combate Leopard 1A5 BR"
+                }
+            },
+            {
+                coords: [-31.3283, -54.1068],
+                nome: "3ª Brigada de Cavalaria Mecanizada (3ª Bda C Mec)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 2.700 militares",
+                    funcao: "Atua na defesa da fronteira e em manobras rápidas em campo aberto.",
+                    armamentos: "Fuzis IMBEL IA2, metralhadoras, mísseis anticarro MILAN",
+                    blindados: "VBTP-MSR Guarani, VBR EE-9 Cascavel",
+                    carros_combate: "Carros de Combate Leopard 1A5 BR"
+                }
+            },
+            {
+                coords: [-22.2227, -54.8055],
+                nome: "4ª Brigada de Cavalaria Mecanizada (4ª Bda C Mec)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 2.800 militares",
+                    funcao: "Força de pronta resposta na região do Pantanal e fronteira com o Paraguai.",
+                    armamentos: "Canhões 90mm, metralhadoras .50",
+                    blindados: "VBTP-MSR Guarani, VBR EE-9 Cascavel, VBC CC Leopard 1A5 BR",
+                    carros_combate: "Carros de Combate Leopard 1A5 BR"
+                }
+            },
+            {
+                coords: [-25.0955, -50.1610],
+                nome: "5ª Brigada de Cavalaria Blindada (5ª Bda C Bld)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 3.000 militares",
+                    funcao: "Unidade blindada de manobra no Sul, com foco em operações de alto impacto.",
+                    armamentos: "Canhões 105mm, metralhadoras, mísseis anticarro",
+                    blindados: "Viaturas blindadas M113 e M577",
+                    carros_combate: "Carros de Combate Leopard 1A5 BR, M-41 Walker Bulldog"
+                }
+            },
+
+            // Brigadas de Infantaria
+            {
+                coords: [2.8222850767805285, -60.63436443376764],
+                nome: "1ª Brigada de Infantaria de Selva (1ª Bda Inf Sl)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 5.000 militares",
+                    funcao: "Operações de combate em selva, patrulha e segurança de fronteira.",
+                    armamentos: "Fuzis de assalto IMBEL IA2, metralhadoras MAG 7.62mm, lança-granadas M203",
+                    aeronaves: "Helicópteros HM-1 Pantera (transporte) e HM-3 Cougar (apoio)",
+                    blindados: "Viaturas leves adaptadas para a selva",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-0.1226, -66.9930],
+                nome: "2ª Brigada de Infantaria de Selva (2ª Bda Inf Sl)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.800 militares",
+                    funcao: "Vigilância e combate na região do Alto Rio Negro, com foco em operações ribeirinhas.",
+                    armamentos: "Fuzis de assalto, metralhadoras, granadas",
+                    aeronaves: "Helicópteros de apoio e transporte",
+                    blindados: "Viaturas leves",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-21.7638, -43.3486],
+                nome: "4ª Brigada de Infantaria Leve de Montanha (4ª Bda Inf L Mth)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 3.200 militares",
+                    funcao: "Combate em ambientes de montanha, operações de escalada e resgate.",
+                    armamentos: "Fuzis de assalto, submetralhadoras, equipamentos de escalada e rapel",
+                    aeronaves: "Nenhum (unidade terrestre)",
+                    blindados: "Viaturas leves e táticas",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-5.7946, -35.2110],
+                nome: "7ª Brigada de Infantaria Motorizada (7ª Bda Inf Mtz)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.000 militares",
+                    funcao: "Pronta resposta no Nordeste, focada em operações de segurança e patrulha.",
+                    armamentos: "Fuzis, metralhadoras, morteiros",
+                    aeronaves: "Nenhum (unidade terrestre)",
+                    blindados: "VBTP-MSR Guarani (transporte de pessoal)",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-31.7761, -52.3411],
+                nome: "8ª Brigada de Infantaria Motorizada (8ª Bda Inf Mtz)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.100 militares",
+                    funcao: "Defesa e patrulha de fronteira na região Sul, atuando em terreno pampa.",
+                    armamentos: "Fuzis, metralhadoras, fuzis de precisão",
+                    aeronaves: "Nenhum",
+                    blindados: "Viaturas de transporte de pessoal",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-8.0578, -34.8829],
+                nome: "10ª Brigada de Infantaria Motorizada (10ª Bda Inf Mtz)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.300 militares",
+                    funcao: "Garantia da lei e da ordem, e operações de segurança na região metropolitana de Recife.",
+                    armamentos: "Fuzis de assalto, metralhadoras, lança-granadas",
+                    aeronaves: "Nenhum",
+                    blindados: "VBTP-MSR Guarani (transporte de pessoal)",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-22.9056, -47.0608],
+                nome: "11ª Brigada de Infantaria Leve (11ª Bda Inf L)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 3.500 militares",
+                    funcao: "Força de ação rápida para atuar em ambientes urbanos e rurais com viaturas leves.",
+                    armamentos: "Fuzis de assalto, metralhadoras, lança-granadas",
+                    aeronaves: "Não (unidade terrestre)",
+                    blindados: "Viaturas leves",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-23.0906, -45.7003],
+                nome: "12ª Brigada de Infantaria Leve (Aeromóvel) (12ª Bda Inf L (Amv))",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.000 militares",
+                    funcao: "Infiltração rápida por via aérea em qualquer parte do território, usando helicópteros da Aviação do Exército.",
+                    armamentos: "Fuzis de assalto, metralhadoras, morteiros",
+                    aeronaves: "Utiliza helicópteros da Aviação do Exército para transporte",
+                    blindados: "Viaturas leves e táticas adaptadas para transporte aéreo",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-15.6012, -56.0970],
+                nome: "13ª Brigada de Infantaria Motorizada (13ª Bda Inf Mtz)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.200 militares",
+                    funcao: "Segurança e defesa na região do Pantanal e Mato Grosso.",
+                    armamentos: "Fuzis, metralhadoras pesadas, morteiros 81mm",
+                    aeronaves: "Nenhum (unidade terrestre)",
+                    blindados: "Viaturas de transporte de pessoal e reconhecimento",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-27.5935, -48.5585],
+                nome: "14ª Brigada de Infantaria Motorizada (14ª Bda Inf Mtz)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 3.800 militares",
+                    funcao: "Pronta resposta em apoio a missões de segurança pública e defesa territorial no sul do Brasil.",
+                    armamentos: "Fuzis de assalto, metralhadoras, morteiros",
+                    aeronaves: "Nenhum",
+                    blindados: "Viaturas de transporte",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-24.9575, -53.4549],
+                nome: "15ª Brigada de Infantaria Mecanizada (15ª Bda Inf Mec)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.500 militares",
+                    funcao: "Operações de manobra em alta velocidade e com maior poder de fogo, utilizando veículos blindados Guarani.",
+                    armamentos: "Fuzis, metralhadoras, canhões autopropulsados",
+                    aeronaves: "Nenhum",
+                    blindados: "VBTP-MSR Guarani",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-3.3643, -64.7118],
+                nome: "16ª Brigada de Infantaria de Selva (16ª Bda Inf Sl)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.700 militares",
+                    funcao: "Vigilância de fronteira e combate em selva, protegendo a calha do Rio Solimões.",
+                    armamentos: "Fuzis de assalto, metralhadoras, fuzis de precisão",
+                    aeronaves: "Helicópteros de apoio e aeronaves leves",
+                    blindados: "Viaturas leves",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-8.780761541852216, -63.903848734544646],
+                nome: "17ª Brigada de Infantaria de Selva (17ª Bda Inf Sl)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.500 militares",
+                    funcao: "Operações na Amazônia, focada em patrulha e combate em selva, com bases fluviais e terrestres.",
+                    armamentos: "Fuzis de assalto IMBEL IA2, metralhadoras FN Minimi, fuzis de precisão AGLC",
+                    aeronaves: "Helicópteros HM-2 Black Hawk, HM-4 Jaguar (apoio)",
+                    blindados: "Viaturas blindadas de transporte de pessoal CHARLIER (VBTP)",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-19.0069, -57.6534],
+                nome: "18ª Brigada de Infantaria de Fronteira (18ª Bda Inf Fron)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 3.500 militares",
+                    funcao: "Defesa e vigilância da fronteira com a Bolívia, com foco no combate a ilícitos transfronteiriços.",
+                    armamentos: "Fuzis de assalto, metralhadoras, equipamentos de vigilância",
+                    aeronaves: "Nenhum",
+                    blindados: "Viaturas táticas e de patrulha",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-5.3722, -49.1232],
+                nome: "23ª Brigada de Infantaria de Selva (23ª Bda Inf Sl)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Aproximadamente 4.900 militares",
+                    funcao: "Operações de vigilância e combate na região Leste da Amazônia.",
+                    armamentos: "Fuzis de assalto, metralhadoras, equipamentos de comunicação",
+                    aeronaves: "Helicópteros de apoio",
+                    blindados: "Viaturas leves",
+                    carros_combate: "Nenhum"
+                }
+            },
+            
+            // Grupamentos de Engenharia
+            {
+                coords: [-7.1197, -34.8450],
+                nome: "1º Grupamento de Engenharia (1º Gpt E)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Unidade de Engenharia",
+                    funcao: "Apoio à mobilidade e contramobilidade, construção de pontes e fortificações.",
+                    armamentos: "N/A",
+                    aeronaves: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-3.1190, -60.0217],
+                nome: "2º Grupamento de Engenharia (2º Gpt E)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Unidade de Engenharia",
+                    funcao: "Operações de construção e apoio no ambiente de selva, incluindo construção de estradas e pontes.",
+                    armamentos: "N/A",
+                    aeronaves: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-20.4428, -54.6465],
+                nome: "3º Grupamento de Engenharia (3º Gpt E)",
+                tipo: "brigada",
+                detalhes: {
+                    efetivo: "Unidade de Engenharia",
+                    funcao: "Apoio a operações no Pantanal, com foco em pontes flutuantes e obras de infraestrutura.",
+                    armamentos: "N/A",
+                    aeronaves: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            
+            // Divisões de Exército
+            {
+                coords: [-22.9068, -43.1729],
+                nome: "1ª Divisão de Exército (1ª DE)",
+                tipo: "divisao_de_exercito",
+                detalhes: {
+                    sede: "Rio de Janeiro - RJ",
+                    subordinacao: "Comando Militar do Leste (CML)",
+                    funcao: "Comando de Forças de Emprego Estratégico, responsável pela defesa da capital e por missões de apoio em grandes eventos.",
+                    abrange_brigadas: "4ª Bda Inf L Mth, 11ª Bda Inf L",
+                    armamentos: "Variados",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-23.5505, -46.6333],
+                nome: "2ª Divisão de Exército (2ª DE)",
+                tipo: "divisao_de_exercito",
+                detalhes: {
+                    sede: "São Paulo - SP",
+                    subordinacao: "Comando Militar do Sudeste (CMSE)",
+                    funcao: "Comando de Forças de Prontidão, com foco em operações de garantia da lei e da ordem e defesa de áreas estratégicas no Sudeste.",
+                    abrange_brigadas: "11ª Bda Inf L, 12ª Bda Inf L (Amv)",
+                    armamentos: "Variados",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-29.6841, -53.8055],
+                nome: "3ª Divisão de Exército (3ª DE) - Divisão Encouraçada",
+                tipo: "divisao_de_exercito",
+                detalhes: {
+                    sede: "Santa Maria - RS",
+                    subordinacao: "Comando Militar do Sul (CMS)",
+                    funcao: "Principal força de manobra blindada e mecanizada do Brasil, responsável pela defesa da fronteira Sul.",
+                    abrange_brigadas: "1ª Bda C Mec, 2ª Bda C Mec, 3ª Bda C Mec, 6ª Bda Inf Bld",
+                    armamentos: "Variados, incluindo fuzis, metralhadoras, artilharia, mísseis",
+                    blindados: "VBTP-MSR Guarani, M113, VBR EE-9 Cascavel",
+                    carros_combate: "Leopard 1A5 BR"
+                }
+            },
+            {
+                coords: [-25.4284, -49.2733],
+                nome: "5ª Divisão de Exército (5ª DE)",
+                tipo: "divisao_de_exercito",
+                detalhes: {
+                    sede: "Curitiba - PR",
+                    subordinacao: "Comando Militar do Sul (CMS)",
+                    funcao: "Comando de Forças de Ação Rápida no Sul, com foco na defesa de áreas estratégicas e na fronteira do Paraná.",
+                    abrange_brigadas: "5ª Bda C Bld, 15ª Bda Inf Mec",
+                    armamentos: "Variados",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-30.0346, -51.2177],
+                nome: "6ª Divisão de Exército (6ª DE)",
+                tipo: "divisao_de_exercito",
+                detalhes: {
+                    sede: "Porto Alegre - RS",
+                    subordinacao: "Comando Militar do Sul (CMS)",
+                    funcao: "Comando de Forças de Prontidão no Sul, com unidades de cavalaria e infantaria motorizada.",
+                    abrange_brigadas: "8ª Bda Inf Mtz, 8ª Bda C Mec",
+                    armamentos: "Variados",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            
+            // Comandos Militares de Área
+            {
+                coords: [-1.4558, -48.5036],
+                nome: "Comando Militar do Norte (CMN)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "Belém - PA",
+                    abrangencia: "Pará (parte), Amapá, Maranhão (parte), Tocantins (parte)",
+                    funcao: "Comando de área estratégica, responsável pela defesa e controle de uma vasta região de fronteira e recursos naturais.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-3.0900, -60.0217],
+                nome: "Comando Militar da Amazônia (CMA)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "Manaus - AM",
+                    abrangencia: "Amazonas, Acre, Rondônia, Roraima e parte do Pará",
+                    funcao: "Responsável por toda a defesa da região amazônica, incluindo vigilância de fronteira e combate a ilícitos ambientais.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-8.0578, -34.8900],
+                nome: "Comando Militar do Nordeste (CMNE)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "Recife - PE",
+                    abrangencia: "Alagoas, Ceará, Paraíba, Pernambuco, Piauí e Rio Grande do Norte",
+                    funcao: "Comando de área estratégica para a região Nordeste, com foco em defesa territorial e apoio à segurança pública.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-20.4500, -54.6465],
+                nome: "Comando Militar do Oeste (CMO)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "Campo Grande - MS",
+                    abrangencia: "Mato Grosso e Mato Grosso do Sul",
+                    funcao: "Comando de área responsável pela defesa das fronteiras com Paraguai e Bolívia, e operações no Pantanal.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-30.031753365859142, -51.23628570144761],
+                nome: "Comando Militar do Sul (CMS)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "Porto Alegre - RS",
+                    abrangencia: "Rio Grande do Sul, Santa Catarina e Paraná",
+                    funcao: "Comando de área estratégica mais ao sul do país, responsável pelas principais unidades blindadas e mecanizadas do Exército.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-23.5550, -46.6333],
+                nome: "Comando Militar do Sudeste (CMSE)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "São Paulo - SP",
+                    abrangencia: "São Paulo e parte de Minas Gerais",
+                    funcao: "Responsável pela defesa do maior centro financeiro e industrial do país.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-22.9100, -43.1729],
+                nome: "Comando Militar do Leste (CML)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "Rio de Janeiro - RJ",
+                    abrangencia: "Rio de Janeiro, Espírito Santo e parte de Minas Gerais",
+                    funcao: "Comando de área estratégica com foco na defesa de portos e áreas industriais no Sudeste.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-15.7750, -47.9292],
+                nome: "Comando Militar do Planalto (CMP)",
+                tipo: "comando_de_area",
+                detalhes: {
+                    sede: "Brasília - DF",
+                    abrangencia: "Distrito Federal e Goiás",
+                    funcao: "Responsável pela defesa da capital federal e das infraestruturas estratégicas na região do Planalto Central.",
+                    armamentos: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            
+            // Grandes Comandos Estratégicos
+            {
+                coords: [-15.5401, -47.3364],
+                nome: "Comando de Artilharia do Exército (Cmdo Art Ex)",
+                tipo: "grandes_comandos_estrategicos",
+                detalhes: {
+                    sede: "Formosa - GO",
+                    funcao: "Comando estratégico de artilharia de grande calibre e longo alcance, responsável pelos sistemas de mísseis e foguetes.",
+                    armamentos: "Obuseiros autopropulsados M109, lançadores múltiplos de foguetes ASTROS II.",
+                    aeronaves: "Nenhum",
+                    blindados: "Viaturas de transporte e apoio",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-23.594345074829786, -46.21733411580439],
+                nome: "Comando de Defesa Antiaérea do Exército (Cmdo DAAe Ex)",
+                tipo: "grandes_comandos_estrategicos",
+                detalhes: {
+                    sede: "Guarujá - SP",
+                    funcao: "Comando especializado na defesa do espaço aéreo, utilizando sistemas de mísseis e canhões antiaéreos.",
+                    armamentos: "Mísseis antiaéreos de curto alcance RBS 70, canhões Bofors L/70",
+                    aeronaves: "Nenhum",
+                    blindados: "Viaturas blindadas M113 (para sistemas de defesa)",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-15.7801, -47.9292],
+                nome: "Comando do Exército Brasileiro",
+                tipo: "grandes_comandos_estrategicos",
+                detalhes: {
+                    sede: "Brasília - DF",
+                    funcao: "Comando Estratégico e Administrativo de toda a Força Terrestre.",
+                    armamentos: "N/A",
+                    aeronaves: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "N/A"
+                }
+            },
+            {
+                coords: [-23.038889, -45.515833],
+                nome: "Comando de Aviação do Exército (CAvEx)",
+                tipo: "grandes_comandos_estrategicos",
+                detalhes: {
+                    sede: "Taubaté - SP",
+                    funcao: "Responsável pela aviação militar do Exército, incluindo helicópteros de ataque e de transporte de tropas.",
+                    armamentos: "Foguetes S-70, mísseis AGM-114 Hellfire",
+                    aeronaves: "Helicópteros HM-1 Pantera, HM-2 Black Hawk, HM-3 Cougar, HM-4 Jaguar, HM-5 Esquilo",
+                    blindados: "Nenhum (unidade de aviação)",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-15.710131684138073, -47.813570250377616],
+                nome: "Comando de Comunicações e Guerra Eletrônica do Exército (CComGEx)",
+                tipo: "grandes_comandos_estrategicos",
+                detalhes: {
+                    sede: "Brasília - DF",
+                    funcao: "Gerencia as comunicações militares e as operações de guerra eletrônica e cibernética.",
+                    armamentos: "N/A",
+                    aeronaves: "N/A",
+                    blindados: "Viaturas de comunicações e guerra eletrônica",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-15.774000112863549, -47.9180717479161],
+                nome: "Comando Logístico (COLOG)",
+                tipo: "grandes_comandos_estrategicos",
+                detalhes: {
+                    sede: "Brasília - DF",
+                    funcao: "Responsável pelo apoio logístico de todo o Exército, incluindo suprimentos, manutenção, transporte e mobilização.",
+                    armamentos: "N/A",
+                    aeronaves: "N/A",
+                    blindados: "N/A",
+                    carros_combate: "Nenhum"
+                }
+            },
+            
+            // Unidades de Elite (mantidas separadas para clareza)
+            {
+                coords: [-22.54314053016795, -43.33755296592795],
+                nome: "Brigada de Infantaria Pára-quedista",
+                tipo: "especializada",
+                detalhes: {
+                    sede: "Rio de Janeiro - RJ",
+                    funcao: "Unidade de tropa de elite com capacidade de infiltração por paraquedas em qualquer ponto do território nacional.",
+                    armamentos: "Fuzis de assalto IMBEL ParaFAL, submetralhadoras MP5, pistolas Glock G17",
+                    aeronaves: "Utiliza aeronaves da FAB, como o C-105 Amazonas e C-130 Hércules, para lançamento.",
+                    blindados: "Viaturas táticas leves HMMWV",
+                    carros_combate: "Nenhum"
+                }
+            },
+            {
+                coords: [-16.6869, -49.2648],
+                nome: "Brigada de Operações Especiais",
+                tipo: "especializada",
+                detalhes: {
+                    sede: "Goiânia - GO",
+                    funcao: "Composta por comandos, forças especiais e esquadrões de elite. Atua em operações sigilosas, de contraterrorismo, busca e salvamento e reconhecimento especial.",
+                    armamentos: "Diversos, incluindo fuzis de assalto, fuzis de precisão e armamento silenciado",
+                    aeronaves: "Utiliza helicópteros HM-2 Black Hawk e HM-4 Jaguar da Aviação do Exército",
+                    blindados: "Viaturas leves de reconhecimento",
+                    carros_combate: "Nenhum"
+                }
+            }
+        ];
+
+        const markerLayers = [];
+
+        function addMarkers(filter) {
+            marcadores.forEach(marcador => {
+                if (filter === 'all' || marcador.tipo === filter) {
+                    const popupContent = `
+                        <div class="popup-content">
+                            <h3>${marcador.nome}</h3>
+                            ${marcador.detalhes.sede ? `<p><strong>Sede:</strong> ${marcador.detalhes.sede}</p>` : ''}
+                            ${marcador.detalhes.funcao ? `<p><strong>Função:</strong> ${marcador.detalhes.funcao}</p>` : ''}
+                            ${marcador.detalhes.abrangencia ? `<p><strong>Abrangência:</strong> ${marcador.detalhes.abrangencia}</p>` : ''}
+                            ${marcador.detalhes.subordinacao ? `<p><strong>Subordinado:</strong> ${marcador.detalhes.subordinacao}</p>` : ''}
+                            ${marcador.detalhes.abrange_brigadas ? `<p><strong>Brigadas:</strong> ${marcador.detalhes.abrange_brigadas}</p>` : ''}
+                            ${marcador.detalhes.efetivo ? `<p><strong>Efetivo:</strong> ${marcador.detalhes.efetivo}</p>` : ''}
+                            ${marcador.detalhes.armamentos && marcador.detalhes.armamentos !== "N/A" ? `<p><strong>Armamentos:</strong> ${marcador.detalhes.armamentos}</p>` : ''}
+                            ${marcador.detalhes.aeronaves && marcador.detalhes.aeronaves !== "N/A" ? `<p><strong>Aeronaves:</strong> ${marcador.detalhes.aeronaves}</p>` : ''}
+                            ${marcador.detalhes.blindados && marcador.detalhes.blindados !== "N/A" ? `<p><strong>Blindados:</strong> ${marcador.detalhes.blindados}</p>` : ''}
+                            ${marcador.detalhes.carros_combate && marcador.detalhes.carros_combate !== "N/A" ? `<p><strong>Carros de Combate:</strong> ${marcador.detalhes.carros_combate}</p>` : ''}
+                        </div>
+                    `;
+                    const marker = L.marker(marcador.coords)
+                        .addTo(map)
+                        .bindPopup(popupContent);
+                    markerLayers.push(marker);
+                }
+            });
+        }
+
+        function removeAllMarkers() {
+            markerLayers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            markerLayers.length = 0; // Limpa o array
+        }
+
+        function filterMarkers(event) {
+            const filter = event.target.dataset.filter;
+            removeAllMarkers();
+            addMarkers(filter);
+            
+            document.querySelectorAll('nav a').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        document.querySelectorAll('nav a').forEach(button => {
+            button.addEventListener('click', filterMarkers);
+        });
+
+        // Adicionar todos os marcadores na carga inicial
+        addMarkers('all');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Doutrina do Exército - COTER</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #e4e8d9;
+            /* Cor de fundo creme/cáqui claro */
+            color: #1b331b;
+            /* Cor do texto verde escuro */
+            line-height: 1.6;
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Título do cabeçalho */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #1b331b;
+            /* Verde escuro */
+            color: #fff;
+            margin-bottom: 20px;
+            position: relative;
+            /* Necessário para posicionar o botão de voltar */
+        }
+
+        /* Logo do cabeçalho - NOVO ESTILO */
+        .header-logo {
+            width: 150px;
+            /* Ajuste o tamanho conforme a necessidade */
+            height: auto;
+            margin-bottom: 20px;
+            /* Espaço entre a logo e o título */
+        }
+
+        header h1 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 3em;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        /* Botão de Voltar */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #4b5320;
+            /* Verde militar */
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #6a743e;
+        }
+
+        /* Seção de História */
+        .historico {
+            text-align: center;
+            padding: 20px;
+            background-color: #c0c6b6;
+            /* Verde oliva médio */
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+
+        .historico h2 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 2em;
+            margin-top: 0;
+        }
+
+        /* Seção da Dashboard */
+        .dashboard {
+            text-align: center;
+        }
+
+        .dashboard h2 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #1b331b;
+        }
+
+        .dashboard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* Estilo para cada caixa de estatística */
+        .stat-box {
+            background-color: #fff;
+            border: 2px solid #1b331b;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-box h3 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 1.5em;
+            color: #4b5320;
+            /* Verde militar */
+            margin-top: 0;
+        }
+
+        .stat-box .number {
+            display: block;
+            font-size: 4em;
+            font-weight: bold;
+            color: #1b331b;
+            font-family: 'Stardos Stencil', sans-serif;
+            margin: 10px 0;
+        }
+
+        .stat-box p {
+            font-size: 1em;
+            margin: 0;
+        }
+
+        /* Rodapé */
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            background-color: #1b331b;
+            color: #fff;
+            font-size: 0.9em;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            .historico h2 {
+                font-size: 1.5em;
+            }
+
+            .dashboard h2 {
+                font-size: 2em;
+            }
+
+            .stat-box {
+                width: 100%;
+            }
+
+            .back-button {
+                top: 10px;
+                left: 10px;
+                font-size: 1em;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <img src="logo1.png" alt="Logo do Centro de Doutrina do Exército" class="header-logo">
+
+        <a href="index.html" class="back-button">Voltar para a Página Principal</a>
+
+        <h1>Centro de Doutrina do Exército</h1>
+    </header>
+
+    <div class="container">
+        <section class="historico">
+            <h2>Histórico</h2>
+            <p>O Centro de Doutrina do Exército (COTER) é o órgão responsável por conduzir estudos e pesquisas para o
+                desenvolvimento de doutrinas militares, visando a modernização e a adaptação do Exército Brasileiro às
+                novas realidades do cenário mundial. Fundado com o propósito de centralizar o conhecimento e garantir a
+                uniformidade nos processos de instrução e emprego da Força Terrestre, o COTER se consolida como um pilar
+                fundamental na preparação e no aprimoramento contínuo de nossos combatentes.</p>
+        </section>
+
+        <section class="dashboard">
+            <h2>Produtos Doutrinários em Números</h2>
+            <div class="dashboard-grid">
+                <div class="stat-box">
+                    <h3>Manuais Publicados</h3>
+                    <span class="number">136+</span>
+                    <p>Manuais de campanha, manuais técnicos e manuais de instrução.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Revistas DMT Publicadas</h3>
+                    <span class="number">42+</span>
+                    <p>Revistas especializadas sobre táticas, estratégias e tecnologia.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Livros Publicados</h3>
+                    <span class="number">1+</span>
+                    <p>Revistas especializadas sobre táticas, estratégias e tecnologia.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Diretrizes de Experimentação Doutrinária</h3>
+                    <span class="number">45+</span>
+                    <p>Projetos em desenvolvimento e validação para o futuro do Exército.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Notas Doutrinárias</h3>
+                    <span class="number">50+</span>
+                    <p>Contribuições em periódicos e eventos nacionais e internacionais.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 COTER - Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+
+</html>

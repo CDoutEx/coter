@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divisão de Missões de Paz, Segurança da Aviação e IGPM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #e4e8d9;
+            color: #1b331b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #1b331b;
+            color: #fff;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .header-logo {
+            width: 250px;
+            height: auto;
+            margin-bottom: 0px;
+        }
+
+        header h1 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 3em;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #4b5320;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #6a743e;
+        }
+
+        .secao {
+            padding: 20px;
+            background-color: #c0c6b6;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+
+        .secao h2 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 2em;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .secao p {
+            text-align: justify;
+        }
+        
+        .missoes-lista {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .missoes-lista li {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 1.2em;
+            background-color: #4b5320;
+            color: #fff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-right: 10px;
+            margin-left: 10px;
+            min-width: 250px;
+            transition: transform 0.3s ease;
+        }
+
+        .missoes-lista li:hover {
+            transform: scale(1.05);
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            border: 2px solid #1b331b;
+            border-radius: 8px;
+            margin: 20px auto;
+        }
+
+        .dashboard {
+            text-align: center;
+        }
+
+        .dashboard h2 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #1b331b;
+        }
+
+        .dashboard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .stat-box {
+            background-color: #fff;
+            border: 2px solid #1b331b;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-box h3 {
+            font-family: 'Stardos Stencil', sans-serif;
+            font-size: 1.5em;
+            color: #4b5320;
+            margin-top: 0;
+        }
+
+        .stat-box .number {
+            display: block;
+            font-size: 4em;
+            font-weight: bold;
+            color: #1b331b;
+            font-family: 'Stardos Stencil', sans-serif;
+            margin: 10px 0;
+        }
+
+        .stat-box p {
+            font-size: 1em;
+            margin: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            background-color: #1b331b;
+            color: #fff;
+            font-size: 0.9em;
+        }
+
+        /* Removido o layout de duas colunas */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            .secao h2 {
+                font-size: 1.5em;
+            }
+
+            .dashboard h2 {
+                font-size: 2em;
+            }
+
+            .stat-box {
+                width: 100%;
+            }
+
+            .back-button {
+                top: 10px;
+                left: 10px;
+                font-size: 1em;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-button">Voltar</a>
+        <img src="logo4.png" alt="Logo da Divisão de Missões de Paz" class="header-logo">
+        <h1>Divisão de Missões de Paz, Segurança da Aviação e IGPM</h1>
+    </header>
+
+    <div class="container">
+        <section class="secao">
+            <h2>Missões de Paz</h2>
+            <p>O Brasil, com uma longa e honrosa história em operações de paz, tem se destacado como um parceiro confiável das Nações Unidas na busca pela estabilidade global. Nossa participação em missões de paz não apenas reforça o compromisso do país com a segurança internacional, mas também promove a capacitação e a experiência de nossos militares em contextos complexos. A maior experiência brasileira ocorreu no Haiti, com a Missão das Nações Unidas para a Estabilização (MINUSTAH), que durou 13 anos e mobilizou cerca de 37 mil militares. Atualmente, o país continua a contribuir com o contingente da missão na República Democrática do Congo (MONUSCO), onde militares brasileiros são empregados na missão de estabilização.</p>
+        </section>
+
+        <section class="secao">
+            <h2>Missões Atuais de Paz e Localização</h2>
+            <ul class="missoes-lista">
+                <li>MONUSCO (República Democrática do Congo)</li>
+                <li>UNMISS (Sudão do Sul)</li>
+                <li>UNISFA (Abyei - Sudão/Sudão do Sul)</li>
+            </ul>
+            <div id="map"></div>
+        </section>
+
+        <section class="secao">
+            <h2>Segurança da Aviação</h2>
+            <p>A Aviação do Exército (AvEx) é um componente vital da Força Terrestre. Sua missão é fornecer apoio aéreo, de combate e logístico, garantindo mobilidade e superioridade tática em diversas operações. A segurança da aviação é uma prioridade, com rigorosos padrões de manutenção, treinamento e prontidão para garantir que a frota esteja sempre pronta para o cumprimento de suas missões, desde o apoio em operações humanitárias até o transporte de tropas e equipamentos.</p>
+        </section>
+
+        <section class="secao">
+            <h2>Inspetoria Geral das Polícias Militares (IGPM)</h2>
+            <p>A Inspetoria Geral das Polícias Militares (IGPM) é o órgão do Exército Brasileiro responsável pela orientação técnica, coordenação e controle de suas forças auxiliares e de reserva: as Polícias Militares (PMs) e os Corpos de Bombeiros Militares (CBMs) dos estados. Essa função é fundamental para manter a unidade doutrinária e operacional entre as Forças Armadas e as forças de segurança estaduais, garantindo a sua prontidão para atuação em apoio ao Exército em casos de necessidade ou emergência nacional.</p>
+        </section>
+
+        <section class="dashboard">
+            <h2>Estatísticas e Números</h2>
+            <div class="dashboard-grid">
+                <div class="stat-box">
+                    <h3>Missões de Paz Participadas</h3>
+                    <span class="number">56+</span>
+                    <p>Missões sob a égide das Nações Unidas desde 1947.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Militares Contribuídos</h3>
+                    <span class="number">55k+</span>
+                    <p>Total de militares e policiais brasileiros enviados para missões de paz.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Horas de Voo (2025)</h3>
+                    <span class="number">2.500+</span>
+                    <p>Horas de voo da Aviação do Exército, em apoio a operações.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Aeronaves em Prontidão</h3>
+                    <span class="number">80+</span>
+                    <p>Total de aeronaves (helicópteros e aviões) da AvEx.</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Forças Auxiliares Coordenadas</h3>
+                    <span class="number">27</span>
+                    <p>Polícias Militares e Corpos de Bombeiros Militares sob supervisão técnica.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Divisão de Missões de Paz, Segurança da Aviação e IGPM. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        var map = L.map('map').setView([0, 20], 3);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var missoes = [
+            {
+                nome: "MONUSCO",
+                local: "República Democrática do Congo",
+                coords: [-4.038333, 21.758664],
+                pop_up: "<b>MONUSCO</b><br>Missão de Estabilização das Nações Unidas na República Democrática do Congo."
+            },
+            {
+                nome: "UNMISS",
+                local: "Sudão do Sul",
+                coords: [6.8770, 31.3070],
+                pop_up: "<b>UNMISS</b><br>Missão das Nações Unidas no Sudão do Sul."
+            },
+            {
+                nome: "UNISFA",
+                local: "Abyei (Sudão/Sudão do Sul)",
+                coords: [10.6406, 28.5375],
+                pop_up: "<b>UNISFA</b><br>Força Interina de Segurança das Nações Unidas para Abyei."
+            }
+        ];
+
+        missoes.forEach(missao => {
+            L.marker(missao.coords).addTo(map)
+                .bindPopup(missao.pop_up);
+        });
+    </script>
+</body>
+</html>
